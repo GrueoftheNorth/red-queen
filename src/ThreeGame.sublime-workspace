@@ -1,0 +1,320 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"Key",
+				"keyboardstate"
+			],
+			[
+				"W",
+				"WindowResize"
+			],
+			[
+				"view",
+				"view_Angle"
+			],
+			[
+				"screen_",
+				"screen_Height"
+			],
+			[
+				"inner",
+				"innerHeight"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "ThreeTemplate.html",
+			"settings":
+			{
+				"buffer_size": 2970,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n	<title>Hello World (Three.js)</title>\n	<meta charset=\"utf-8\">\n	<meta name=\"viewport\" content=\"width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0\">\n    <link rel=stylesheet href=\"css/base.css\"/>\n</head>\n<body>\n\n<script src=\"js/Three.js\"></script>\n<script src=\"js/Detector.js\"></script>\n<script src=\"js/Stats.js\"></script>\n<script src=\"js/OrbitControls.js\"></script>\n<script src=\"js/THREEx.KeyboardState.js\"></script>\n<script src=\"js/THREEx.FullScreen.js\"></script>\n<script src=\"js/THREEx.WindowResize.js\"></script>\n\n<!-- jQuery code to display an information button and box when clicked. -->\n<script src=\"js/jquery-1.9.1.js\"></script>\n<script src=\"js/jquery-ui.js\"></script>\n<link rel=stylesheet href=\"css/jquery-ui.css\" />\n<link rel=stylesheet href=\"css/info.css\"/>\n<script src=\"js/info.js\"></script>\n<div id=\"infoButton\"></div>\n<div id=\"infoBox\" title=\"Demo Information\">\nThis three.js demo is part of a collection at\n<a href=\"http://stemkoski.github.io/Three.js/\">http://stemkoski.github.io/Three.js/</a>\n</div>\n<!-- ------------------------------------------------------------ -->\n\n<div id=\"ThreeJS\" style=\"z-index: 1; position: absolute; left:0px; top:0px\"></div>\n<script>\n/*\n	Three.js \"tutorials by example\"\n	Author: Lee Stemkoski\n	Date: July 2013 (three.js v59dev)\n */\n\n	\n//////////	\n// MAIN //\n//////////\n\n// standard global variables\nvar container, scene, camera, renderer, controls, stats;\nvar keyboard = new THREEx.KeyboardState();\nvar clock = new THREE.Clock();\n\n// custom global variables\nvar cube;\n\n// initialization\ninit();\n\n// animation loop / game loop\nanimate();\n\n///////////////\n// FUNCTIONS //\n///////////////\n			\nfunction init() \n{\n	///////////\n	// SCENE //\n	///////////\n	scene = new THREE.Scene();\n\n	////////////\n	// CAMERA //\n	////////////\n	\n	// set the view size in pixels (custom or according to window size)\n	// var SCREEN_WIDTH = 400, SCREEN_HEIGHT = 300;\n	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;	\n	// camera attributes\n	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;\n	// set up camera\n	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);\n	// add the camera to the scene\n	scene.add(camera);\n	// the camera defaults to position (0,0,0)\n	// 	so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin\n	camera.position.set(0,150,400);\n	camera.lookAt(scene.position);	\n	\n	//////////////\n	// RENDERER //\n	//////////////\n	\n	// create and start the renderer; choose antialias setting.\n	if ( Detector.webgl )\n		renderer = new THREE.WebGLRenderer( {antialias:true} );\n	else\n		renderer = new THREE.CanvasRenderer(); \n	\n	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);\n	\n	// attach div element to variable to contain the renderer\n	container = document.getElementById( 'ThreeJS' );\n	// alternatively: to create the div at runtime, use:\n	//   container = document.createElement( 'div' );\n	//    document.body.appendChild( container );\n	\n	// attach renderer to the container div\n	container.appendChild( renderer.domElement );\n	\n	////////////\n	// EVENTS //\n	////////////\n\n	// automatically resize renderer\n	THREEx.WindowResize(renderer, camera);\n	// toggle full-screen on given key press\n	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });\n	\n	//////////////\n	// CONTROLS //\n	//////////////\n\n	// move mouse and: left   click to rotate, \n	//                 middle click to zoom, \n	//                 right  click to pan\n	controls = new THREE.OrbitControls( camera, renderer.domElement );\n	\n	///////////\n	// STATS //\n	///////////\n	\n	// displays current and past frames per second attained by scene\n	stats = new Stats();\n	stats.domElement.style.position = 'absolute';\n	stats.domElement.style.bottom = '0px';\n	stats.domElement.style.zIndex = 100;\n	container.appendChild( stats.domElement );\n	\n	///////////\n	// LIGHT //\n	///////////\n	\n	// create a light\n	var light = new THREE.PointLight(0xffffff);\n	light.position.set(0,250,0);\n	scene.add(light);\n	var ambientLight = new THREE.AmbientLight(0x111111);\n	// scene.add(ambientLight);\n	\n	//////////////\n	// GEOMETRY //\n	//////////////\n		\n	// most objects displayed are a \"mesh\":\n	//  a collection of points (\"geometry\") and\n	//  a set of surface parameters (\"material\")	\n\n	// Sphere parameters: radius, segments along width, segments along height\n	var sphereGeometry = new THREE.SphereGeometry( 50, 32, 16 ); \n	// use a \"lambert\" material rather than \"basic\" for realistic lighting.\n	//   (don't forget to add (at least one) light!)\n	var sphereMaterial = new THREE.MeshLambertMaterial( {color: 0x8888ff} ); \n	var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);\n	sphere.position.set(100, 50, -50);\n	scene.add(sphere);\n	\n	// Create an array of materials to be used in a cube, one for each side\n	var cubeMaterialArray = [];\n	// order to add materials: x+,x-,y+,y-,z+,z-\n	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0xff3333 } ) );\n	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0xff8800 } ) );\n	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0xffff33 } ) );\n	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x33ff33 } ) );\n	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x3333ff } ) );\n	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x8833ff } ) );\n	var cubeMaterials = new THREE.MeshFaceMaterial( cubeMaterialArray );\n	// Cube parameters: width (x), height (y), depth (z), \n	//        (optional) segments along x, segments along y, segments along z\n	var cubeGeometry = new THREE.CubeGeometry( 100, 100, 100, 1, 1, 1 );\n	// using THREE.MeshFaceMaterial() in the constructor below\n	//   causes the mesh to use the materials stored in the geometry\n	cube = new THREE.Mesh( cubeGeometry, cubeMaterials );\n	cube.position.set(-100, 50, -50);\n	scene.add( cube );		\n\n	// create a set of coordinate axes to help orient user\n	//    specify length in pixels in each direction\n	var axes = new THREE.AxisHelper(100);\n	scene.add( axes );\n	\n	///////////\n	// FLOOR //\n	///////////\n	\n	// note: 4x4 checkboard pattern scaled so that each square is 25 by 25 pixels.\n	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );\n	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; \n	floorTexture.repeat.set( 10, 10 );\n	// DoubleSide: render texture on both sides of mesh\n	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );\n	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 1, 1);\n	var floor = new THREE.Mesh(floorGeometry, floorMaterial);\n	floor.position.y = -0.5;\n	floor.rotation.x = Math.PI / 2;\n	scene.add(floor);\n	\n	/////////\n	// SKY //\n	/////////\n	\n	// recommend either a skybox or fog effect (can't use both at the same time) \n	// without one of these, the scene's background color is determined by webpage background\n\n	// make sure the camera's \"far\" value is large enough so that it will render the skyBox!\n	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );\n	// BackSide: render faces from inside of the cube, instead of from outside (default).\n	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );\n	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );\n	// scene.add(skyBox);\n	\n	// fog must be added to scene before first render\n	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );\n}\n\nfunction animate() \n{\n    requestAnimationFrame( animate );\n	render();		\n	update();\n}\n\nfunction update()\n{\n	// delta = change in time since last call (in seconds)\n	var delta = clock.getDelta(); \n\n	// functionality provided by THREEx.KeyboardState.js\n	if ( keyboard.pressed(\"1\") )\n		document.getElementById('message').innerHTML = ' Have a nice day! - 1';	\n	if ( keyboard.pressed(\"2\") )\n		document.getElementById('message').innerHTML = ' Have a nice day! - 2 ';	\n		\n	controls.update();\n	stats.update();\n}\n\nfunction render() \n{	\n	renderer.render( scene, camera );\n}\n\n</script>\n\n</body>\n</html>\n",
+			"settings":
+			{
+				"buffer_size": 8067,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"",
+				"Git: Change Branch"
+			],
+			[
+				"git add .",
+				"Git: Add..."
+			],
+			[
+				"add",
+				"Project: Add Folder"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"i",
+				"Git: Gitk"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"git push",
+				"Git: Push"
+			],
+			[
+				"git status",
+				"Git: Status"
+			],
+			[
+				"git add ",
+				"Git: Add..."
+			],
+			[
+				"git ",
+				"Git: Init"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 477.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/Users/Max/Documents/RedQueen/js/detector.js",
+		"/C/Users/Max/Documents/RedQueen/ThreeTemplate.html"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"keyboard",
+			"position",
+			"wireframe"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "ThreeTemplate.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2970,
+						"regions":
+						{
+							"mark":
+							{
+								"flags": 144,
+								"icon": "dot",
+								"regions":
+								[
+									[
+										2759,
+										2759
+									]
+								],
+								"scope": "mark"
+							}
+						},
+						"selection":
+						[
+							[
+								2650,
+								2650
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 687.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8067,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1469,
+								1477
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 414.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git":
+	{
+		"height": 100.0
+	},
+	"project": "ThreeGame.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"",
+				"untitled"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
