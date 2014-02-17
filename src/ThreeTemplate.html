@@ -37,7 +37,7 @@
 
             camera            = new THREE.PerspectiveCamera(view_Angle,aspect,near,far);
             scene.add(camera);
-            camera.position.set(100,1500,0);
+            camera.position.set(550,1500,0);
             camera.lookAt(scene.position);
             initHands();
 
@@ -66,10 +66,17 @@
             leftHand.rotation.y = -70;
             scene.add( leftHand );
 
-            for (var i = 1; i <= 5; i++){
-                var fingerGeometry          = new THREE.CubeGeometry( 150, 50, 100 );
+            for (var i = 1; i <= 8; i++){
+                var fingerGeometry          = new THREE.CubeGeometry( 200, 50, 100 );
                 var leftFinger              = new THREE.Mesh( fingerGeometry, material );
-                leftFinger.position.set(-50,-100 + i*100, 400);
+                leftFinger.position.set(0,((i > 4)?-1000:-250) + i*175, (i > 4)?-450:400);
+                leftFinger.rotation.y = -80;
+                scene.add( leftFinger );
+            }
+            for (var i = 1; i <= 8; i++){
+                var fingerGeometry          = new THREE.CubeGeometry( 200, 50, 100 );
+                var leftFinger              = new THREE.Mesh( fingerGeometry, material );
+                leftFinger.position.set((i > 4)?20:0,((i > 4)?-1000:-200) + i*175, (i > 4)?-275:200);
                 leftFinger.rotation.y = -80;
                 scene.add( leftFinger );
             }
@@ -85,12 +92,14 @@
 
             //--------Light Init
             var light = new THREE.PointLight(0xffffff);
+            var light2 = new THREE.PointLight(0xffffff);
+            light2.position.set(0,0,500);
             light.position.set(0,0,0);
             scene.add(light);
             var ambientLight = new THREE.AmbientLight(0x111111);
             scene.add(ambientLight);
         }
-    }
+    }   
 
         function animate() {
             // note: three.js includes requestAnimationFrame shim
