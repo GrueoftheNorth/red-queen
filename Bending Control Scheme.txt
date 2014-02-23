@@ -1,0 +1,6 @@
+For Water Bending:
+Press left mouse to draw water towards cursor without group.
+Circle water while pressing q,w,e, or r to form a group. 
+press group button to draw water while holding. double tap to have water continue to surge in that direction.
+press shift plus group to freeze water, or double tap shift alone to freeze all water. 
+Water hits harder in arcs, closer to circle, better hit.
